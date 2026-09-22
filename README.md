@@ -6,6 +6,26 @@ functional. The calculation uses Fermi--Dirac occupations at a **fictitious**
 electronic temperature, making near-degenerate frontier orbitals fractionally
 occupied.
 
+The repository currently contains the package scaffold and design described
+below. The FT-DFT calculation code and examples are the next implementation
+steps.
+
+## Repository layout
+
+```text
+StaticCorrelationThermo/
+├── src/
+│   └── static_correlation_thermo/
+│       └── __init__.py
+├── examples/
+├── tests/
+└── README.md
+```
+
+The importable Python package is `static_correlation_thermo`. Calculation code
+will live under this package, example calculations under `examples/`, and
+automated checks under `tests/`.
+
 ## Method
 
 For orbital energy `epsilon_i`, chemical potential `mu`, and
@@ -33,7 +53,7 @@ will therefore be:
 - a simple fractional-occupation diagnostic;
 - an optional scan over temperature or molecular geometry.
 
-## Proposed usage
+## Planned Python interface
 
 ```python
 from pyscf import gto
