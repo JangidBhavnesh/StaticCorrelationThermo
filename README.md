@@ -1,8 +1,8 @@
-# Static correlation Thermometer with finite-temperature DFT in PySCF
+# Static correlation Thermometer with FT-DFT in PySCF
 
 This project will provide a small PySCF workflow for visualizing static
 correlation at a supplied molecular geometry and exchange-correlation (XC)
-functional. The calculation uses Fermi--Dirac occupations at a fictitious
+functional. The calculation uses Fermi--Dirac occupations at a **fictitious**
 electronic temperature, making near-degenerate frontier orbitals fractionally
 occupied.
 
@@ -34,16 +34,6 @@ will therefore be:
 - an optional scan over temperature or molecular geometry.
 
 ## Proposed usage
-
-The command-line interface will take an XYZ geometry, XC functional, basis,
-and one or more temperatures:
-
-```bash
-ftdft h2_stretched.xyz --xc pbe --basis def2-svp \
-  --temperature 0 1000 5000
-```
-
-The corresponding Python interface will accept a built PySCF molecule:
 
 ```python
 from pyscf import gto
