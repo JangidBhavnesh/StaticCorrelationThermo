@@ -1,69 +1,92 @@
-# Finite-temperature DFT in PySCF
+# Static correlation with finite-temperature DFT in PySCF
 
-This small package runs molecular Kohn--Sham DFT with Fermi--Dirac orbital
-occupations.  It is intended to make near-degeneracy (static-correlation)
-effects visible for a chosen geometry and exchange-correlation functional.
+This project will provide a small PySCF workflow for visualizing static
+correlation at a supplied molecular geometry and exchange-correlation (XC)
+functional. The calculation uses Fermi--Dirac occupations at a fictitious
+electronic temperature, making near-degenerate frontier orbitals fractionally
+occupied.
 
-At an electronic temperature `T`, PySCF minimizes an approximate electronic
-Helmholtz free energy
+## Method
+
+For orbital energy `epsilon_i`, chemical potential `mu`, and
+`sigma = k_B T`, the occupation of one spin orbital is
 
 ```text
-A(T) = E(T) - k_B T S
+f_i = 1 / (exp((epsilon_i - mu) / sigma) + 1).
 ```
 
-and reports fractional KS occupations and the noninteracting entropy `S`.
-When a bond is stretched and its bonding and antibonding orbitals become nearly
-degenerate, both orbitals acquire appreciable fractional occupation.  This is a
-useful qualitative static-correlation diagnostic.  The temperature is a
-fictitious regularization parameter here, not a nuclear temperature.
+The electron number determines `mu`. PySCF then reports the self-consistent
+internal energy `E(T)`, dimensionless noninteracting entropy `S/k_B`, and
+electronic Helmholtz free energy
 
-## Install and run
+```text
+A(T) = E(T) - sigma (S/k_B).
+```
+
+As a bond is stretched, its bonding and antibonding orbitals become nearly
+degenerate. In a spin-restricted calculation they approach occupations of one
+electron each, revealing the onset of static correlation. The primary outputs
+will therefore be:
+
+- orbital energies and fractional occupations;
+- `E(T)`, `A(T)`, and `S/k_B`;
+- a simple fractional-occupation diagnostic;
+- an optional scan over temperature or molecular geometry.
+
+## Proposed usage
+
+The command-line interface will take an XYZ geometry, XC functional, basis,
+and one or more temperatures:
 
 ```bash
-python -m pip install -e .
-ftdft examples/h2_stretched.xyz --xc pbe --basis def2-svp \
-  --temperature 0 5000
+ftdft h2_stretched.xyz --xc pbe --basis def2-svp \
+  --temperature 0 1000 5000
 ```
 
-The table contains the KS internal energy `E(T)`, electronic free energy
-`A(T)`, entropy in units of `k_B`, and a fractional-occupation index.  The
-index is zero for integer restricted occupations and approaches 2 when two
-spatial orbitals each have occupation 1.  Fractionally occupied orbitals are
-listed below each finite-temperature result.
-
-To see the effect develop as H2 is stretched, run:
-
-```bash
-python examples/h2_dissociation.py
-```
-
-The Python interface accepts any built PySCF molecule and any XC expression
-understood by PySCF:
+The corresponding Python interface will accept a built PySCF molecule:
 
 ```python
 from pyscf import gto
 from static_correlation_thermo import run_ftdft
 
-mol = gto.M(atom="H 0 0 -1.5; H 0 0 1.5", basis="def2-svp")
-result = run_ftdft(mol, xc="pbe0", temperature=5000.0)
+mol = gto.M(
+    atom="H 0 0 -1.5; H 0 0 1.5",
+    basis="def2-svp",
+    unit="Angstrom",
+)
 
-print(result.free_energy, result.entropy_kb)
+result = run_ftdft(mol, xc="pbe", temperature=5000.0)
+print(result.free_energy)
+print(result.entropy_kb)
 print(result.fractional_orbitals())
 ```
 
-For open-shell systems the helper selects UKS and conserves the alpha and beta
-electron counts separately.  Use a spin-restricted calculation for stretched
-closed-shell H2 if the goal is to expose static correlation; unrestricted DFT
-can instead lower its energy by breaking spin symmetry.
+The initial example will scan the H--H distance. Near equilibrium the bonding
+orbital is close to doubly occupied and the antibonding orbital is nearly
+empty. At stretched geometries both occupations move toward one as the
+bonding--antibonding gap closes.
 
-## Important limitation
+## Spin choice
 
-This is a Mermin-style finite-temperature KS calculation using PySCF's
-smearing support, but standard PySCF functionals are ground-state XC
-approximations.  Consequently it is **not** a fully temperature-dependent XC
-theory, and fractional KS occupations are not correlated natural-orbital
-occupations.  Treat the entropy and fractional-occupation index as qualitative
-diagnostics and check their dependence on the chosen fictitious temperature,
-functional, basis, and spin constraint.
+Closed-shell examples intended to expose static correlation should remain
+spin restricted. Unrestricted DFT can instead lower the energy by breaking
+spin symmetry and may hide the fractional-occupation signature. Open-shell
+systems will use UKS with the alpha and beta electron counts fixed separately.
 
-Run the tests with `pytest`.
+## Scope and limitations
+
+This workflow is a Mermin-style finite-temperature KS calculation based on
+PySCF's Fermi smearing support. Standard PySCF XC functionals are ground-state
+approximations; they do not acquire explicit temperature dependence here.
+Accordingly:
+
+- the electronic temperature is a diagnostic/regularization parameter, not
+  the nuclear temperature of an experiment;
+- fractional KS occupations are not correlated natural-orbital occupations;
+- entropy and fractional occupations are qualitative static-correlation
+  indicators, not a replacement for a multireference calculation;
+- results should be checked against temperature, XC functional, basis set,
+  geometry, and the restricted/unrestricted choice.
+
+The first implementation will target molecular RKS/UKS calculations and use
+PySCF's `scf.addons.smearing(..., method="fermi")` machinery.
