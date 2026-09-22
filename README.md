@@ -32,7 +32,7 @@ For orbital energy $\epsilon_i$, chemical potential $\mu$, and
 $\sigma = k_B T$, the occupation of one spin orbital is
 
 
-$f_i = \frac{1}{\exp((\epsilon_i - \mu) / \sigma) + 1}$
+$$f_i = \frac{1}{\exp((\epsilon_i - \mu) / \sigma) + 1}$$
 
 
 The electron number determines $\mu$. PySCF then reports the self-consistent
@@ -40,7 +40,7 @@ internal energy $E(T)$, dimensionless noninteracting entropy $S/k_B$, and
 electronic Helmholtz free energy
 
 
-$A(T) = E(T) - \sigma S/k_B$
+$$A(T) = E(T) - \sigma S/k_B$$
 
 As a bond is stretched, its bonding and antibonding orbitals become nearly
 degenerate. In a spin-restricted calculation they approach occupations of one
@@ -52,12 +52,14 @@ Following the FOD analysis used in ORCA, the real-space fractional-occupation
 density will be constructed from the finite-temperature molecular spin
 orbitals:
 
-```text
-rho_FOD(r) = sum_i w_i |phi_i(r)|^2
 
-w_i = 1 - f_i   for epsilon_i < mu
-w_i = f_i       for epsilon_i > mu
-```
+$$\rho_{FOD}(r) = \sum_i w_i |\phi_i(r)|^2 \\
+w_i = \begin{cases}
+    1 - f_i &   \text{for } \epsilon_i < \mu,  \\
+    f_i     &   \text{for } \epsilon_i > \mu
+\end{cases}
+    $$
+
 
 Here, `f_i` is a spin-orbital occupation between zero and one. Thus, fully
 occupied and fully empty orbitals make no contribution, while fractionally
