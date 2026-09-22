@@ -28,20 +28,19 @@ automated checks under `tests/`.
 
 ## Method
 
-For orbital energy `epsilon_i`, chemical potential `mu`, and
-`sigma = k_B T`, the occupation of one spin orbital is
+For orbital energy $\epsilon_i$, chemical potential $\mu$, and
+$\sigma = k_B T$, the occupation of one spin orbital is
 
-```text
-f_i = 1 / (exp((epsilon_i - mu) / sigma) + 1).
-```
 
-The electron number determines `mu`. PySCF then reports the self-consistent
-internal energy `E(T)`, dimensionless noninteracting entropy `S/k_B`, and
+$f_i = \frac{1}{\exp((\epsilon_i - \mu) / \sigma) + 1}$
+
+
+The electron number determines $\mu$. PySCF then reports the self-consistent
+internal energy $E(T)$, dimensionless noninteracting entropy $S/k_B$, and
 electronic Helmholtz free energy
 
-```text
-A(T) = E(T) - sigma (S/k_B).
-```
+
+$A(T) = E(T) - \sigma S/k_B$
 
 As a bond is stretched, its bonding and antibonding orbitals become nearly
 degenerate. In a spin-restricted calculation they approach occupations of one
@@ -49,7 +48,7 @@ electron each, revealing the onset of static correlation. The primary outputs
 will therefore be:
 
 - orbital energies and fractional occupations;
-- `E(T)`, `A(T)`, and `S/k_B`;
+- $E(T)$, $A(T)$, and $S/k_B$;
 - a simple fractional-occupation diagnostic;
 - an optional scan over temperature or molecular geometry.
 
