@@ -1,14 +1,18 @@
 # Static correlation Thermometer with FT-DFT in PySCF
 
-This project will provide a small PySCF workflow for visualizing static
+This project provides a small PySCF workflow for visualizing static
 correlation at a supplied molecular geometry and exchange-correlation (XC)
 functional. The calculation uses Fermi--Dirac occupations at a **fictitious**
 electronic temperature, making near-degenerate frontier orbitals fractionally
 occupied.
 
-The repository currently contains the package scaffold and design described
-below. The FT-DFT calculation, FOD-density export, and examples are the next
-implementation steps.
+## Installation
+
+Install the package and its PySCF dependency from the repository root:
+
+```bash
+python -m pip install -e .
+```
 
 ## Repository layout
 
@@ -16,14 +20,18 @@ implementation steps.
 StaticCorrelationThermo/
 ├── src/
 │   └── static_correlation_thermo/
-│       └── __init__.py
+│       ├── __init__.py
+│       └── ftdft.py
 ├── examples/
+│   └── h2_dissociation.py
 ├── tests/
+│   └── test_ftdft.py
+├── pyproject.toml
 └── README.md
 ```
 
 The importable Python package is `static_correlation_thermo`. Calculation code
-will live under this package, example calculations under `examples/`, and
+lives under this package, example calculations under `examples/`, and
 automated checks under `tests/`.
 
 ## Method
@@ -49,7 +57,7 @@ electron each, revealing the onset of static correlation.
 ### Fractional-occupation density
 
 Following the FOD analysis used in ORCA, the real-space fractional-occupation
-density will be constructed from the finite-temperature molecular spin
+density is constructed from the finite-temperature molecular spin
 orbitals:
 
 
@@ -75,7 +83,7 @@ This follows the definition in the
 and the original
 [Grimme--Hansen FOD work](https://doi.org/10.1002/anie.201501887).
 
-The primary outputs will therefore be:
+The primary outputs are:
 
 - orbital energies and fractional occupations;
 - $E(T)$, $A(T)$, and $S/k_B$;
@@ -87,8 +95,8 @@ The primary outputs will therefore be:
 
 ## Visualization files
 
-Each calculation will write two complementary files using the chosen output
-prefix:
+When `output_prefix` is supplied, each calculation writes two complementary
+files using that prefix:
 
 ```text
 <prefix>.molden     geometry, basis, MOs, energies, spins, and occupations
@@ -108,7 +116,7 @@ Internally, the implementation will form the FOD one-particle density matrix
 from the weighted MO coefficients and use PySCF to evaluate it on the cube
 grid. The numerical integral of the cube will be checked against $N_\text{FOD}$.
 
-## Planned Python interface
+## Python interface
 
 ```python
 from pyscf import gto
@@ -133,10 +141,21 @@ print(result.molden_file)   # h2_stretched.molden
 print(result.fod_cube_file) # h2_stretched.fod.cube
 ```
 
-The initial example will scan the H--H distance. Near equilibrium the bonding
+The cube defaults to an `80 x 80 x 80` grid with a 5 bohr margin around the
+molecule. Use `cube_points`, `cube_resolution`, and `cube_margin` to control
+the export. If no `output_prefix` is given, the calculation returns all scalar
+and orbital results without writing visualization files.
+
+The included example scans the H--H distance. Near equilibrium the bonding
 orbital is close to doubly occupied and the antibonding orbital is nearly
 empty. At stretched geometries both occupations move toward one as the
 bonding--antibonding gap closes.
+
+```bash
+python examples/h2_dissociation.py
+```
+
+This writes one Molden file and one FOD cube per geometry under `fod_results/`.
 
 ## Spin choice
 
@@ -160,5 +179,12 @@ Accordingly:
 - results should be checked against temperature, XC functional, basis set,
   geometry, and the restricted/unrestricted choice.
 
-The first implementation will target molecular RKS/UKS calculations and use
-PySCF's `scf.addons.smearing(..., method="fermi")` machinery.
+The implementation currently targets molecular RKS/UKS calculations and uses
+PySCF's `scf.addons.smearing(..., method="fermi")`,
+`tools.molden.from_scf`, and `tools.cubegen.density` machinery.
+
+Run the automated tests with:
+
+```bash
+pytest
+```
