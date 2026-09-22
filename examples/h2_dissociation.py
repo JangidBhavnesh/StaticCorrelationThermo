@@ -29,4 +29,3 @@ for distance in (0.74, 1.50, 2.00, 3.00, 4.00):
     )
 
 print(f"\nMolden and FOD cube files were written to {output_directory}/")
-
