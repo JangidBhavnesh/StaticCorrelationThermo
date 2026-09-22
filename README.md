@@ -53,7 +53,7 @@ density will be constructed from the finite-temperature molecular spin
 orbitals:
 
 
-$$\rho_{FOD}(r) = \sum_i w_i |\phi_i(r)|^2 \\
+$$\rho_\text{FOD}(r) = \sum_i w_i |\phi_i(r)|^2 \\
 w_i = \begin{cases}
     1 - f_i &   \text{for } \epsilon_i < \mu,  \\
     f_i     &   \text{for } \epsilon_i > \mu
@@ -66,9 +66,9 @@ occupied and fully empty orbitals make no contribution, while fractionally
 occupied frontier orbitals reveal where the statically correlated ("hot")
 electrons are localized. Its spatial integral gives the scalar diagnostic
 
-```text
-N_FOD = integral rho_FOD(r) dr = sum_i w_i.
-```
+$$
+N_\text{FOD} = \int \rho_\text{FOD}(r) dr = \sum_i w_i
+$$
 
 This follows the definition in the
 [ORCA FOD documentation](https://www.faccts.de/docs/orca/6.1/manual/contents/spectroscopyproperties/fod.html)
@@ -79,10 +79,10 @@ The primary outputs will therefore be:
 
 - orbital energies and fractional occupations;
 - $E(T)$, $A(T)$, and $S/k_B$;
-- the integrated static-correlation diagnostic `N_FOD`;
+- the integrated static-correlation diagnostic $N_\text{FOD}$;
 - a Molden file containing the converged MOs, energies, spins, and fractional
   occupations;
-- a Gaussian cube file containing `rho_FOD(r)` for direct visualization;
+- a Gaussian cube file containing $\rho_\text{FOD}(r)$ for direct visualization;
 - an optional scan over temperature or molecular geometry.
 
 ## Visualization files
@@ -106,7 +106,7 @@ point; the value may need adjustment for a particular molecule.
 
 Internally, the implementation will form the FOD one-particle density matrix
 from the weighted MO coefficients and use PySCF to evaluate it on the cube
-grid. The numerical integral of the cube will be checked against `N_FOD`.
+grid. The numerical integral of the cube will be checked against $N_\text{FOD}$.
 
 ## Planned Python interface
 
