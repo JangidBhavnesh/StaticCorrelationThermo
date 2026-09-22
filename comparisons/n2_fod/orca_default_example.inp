@@ -1,0 +1,9 @@
+! FOD
+
+# ORCA's FOD defaults: TPSS/def2-TZVP and T_el = 5000 K.
+# N2 at R = 1.10 angstrom.
+* xyz 0 1
+N  0.0  0.0  -0.55000000
+N  0.0  0.0   0.55000000
+*
+
