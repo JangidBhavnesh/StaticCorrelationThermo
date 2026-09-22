@@ -7,8 +7,8 @@ electronic temperature, making near-degenerate frontier orbitals fractionally
 occupied.
 
 The repository currently contains the package scaffold and design described
-below. The FT-DFT calculation code and examples are the next implementation
-steps.
+below. The FT-DFT calculation, FOD-density export, and examples are the next
+implementation steps.
 
 ## Repository layout
 
@@ -44,13 +44,67 @@ $A(T) = E(T) - \sigma S/k_B$
 
 As a bond is stretched, its bonding and antibonding orbitals become nearly
 degenerate. In a spin-restricted calculation they approach occupations of one
-electron each, revealing the onset of static correlation. The primary outputs
-will therefore be:
+electron each, revealing the onset of static correlation.
+
+### Fractional-occupation density
+
+Following the FOD analysis used in ORCA, the real-space fractional-occupation
+density will be constructed from the finite-temperature molecular spin
+orbitals:
+
+```text
+rho_FOD(r) = sum_i w_i |phi_i(r)|^2
+
+w_i = 1 - f_i   for epsilon_i < mu
+w_i = f_i       for epsilon_i > mu
+```
+
+Here, `f_i` is a spin-orbital occupation between zero and one. Thus, fully
+occupied and fully empty orbitals make no contribution, while fractionally
+occupied frontier orbitals reveal where the statically correlated ("hot")
+electrons are localized. Its spatial integral gives the scalar diagnostic
+
+```text
+N_FOD = integral rho_FOD(r) dr = sum_i w_i.
+```
+
+This follows the definition in the
+[ORCA FOD documentation](https://www.faccts.de/docs/orca/6.1/manual/contents/spectroscopyproperties/fod.html)
+and the original
+[Grimme--Hansen FOD work](https://doi.org/10.1002/anie.201501887).
+
+The primary outputs will therefore be:
 
 - orbital energies and fractional occupations;
 - $E(T)$, $A(T)$, and $S/k_B$;
-- a simple fractional-occupation diagnostic;
+- the integrated static-correlation diagnostic `N_FOD`;
+- a Molden file containing the converged MOs, energies, spins, and fractional
+  occupations;
+- a Gaussian cube file containing `rho_FOD(r)` for direct visualization;
 - an optional scan over temperature or molecular geometry.
+
+## Visualization files
+
+Each calculation will write two complementary files using the chosen output
+prefix:
+
+```text
+<prefix>.molden     geometry, basis, MOs, energies, spins, and occupations
+<prefix>.fod.cube   three-dimensional fractional-occupation density
+```
+
+The Molden file can be opened in a Molden-compatible viewer to inspect the
+individual fractionally occupied frontier orbitals. The FOD itself is a sum of
+weighted orbital densities, not a single molecular orbital, so it cannot be
+represented faithfully as one Molden orbital. The ORCA-like FOD picture is
+therefore obtained by opening `<prefix>.fod.cube` in a cube-compatible viewer
+such as Molden, Jmol, Avogadro, VMD, or Chemcraft and displaying a positive
+isosurface. An isovalue of `0.005 e/bohr^3` is a useful ORCA-compatible starting
+point; the value may need adjustment for a particular molecule.
+
+Internally, the implementation will form the FOD one-particle density matrix
+from the weighted MO coefficients and use PySCF to evaluate it on the cube
+grid. The numerical integral of the cube will be checked against `N_FOD`.
 
 ## Planned Python interface
 
@@ -64,10 +118,17 @@ mol = gto.M(
     unit="Angstrom",
 )
 
-result = run_ftdft(mol, xc="pbe", temperature=5000.0)
+result = run_ftdft(
+    mol,
+    xc="pbe",
+    temperature=5000.0,
+    output_prefix="h2_stretched",
+)
 print(result.free_energy)
 print(result.entropy_kb)
-print(result.fractional_orbitals())
+print(result.n_fod)
+print(result.molden_file)   # h2_stretched.molden
+print(result.fod_cube_file) # h2_stretched.fod.cube
 ```
 
 The initial example will scan the H--H distance. Near equilibrium the bonding
@@ -92,7 +153,7 @@ Accordingly:
 - the electronic temperature is a diagnostic/regularization parameter, not
   the nuclear temperature of an experiment;
 - fractional KS occupations are not correlated natural-orbital occupations;
-- entropy and fractional occupations are qualitative static-correlation
+- `N_FOD` and the FOD isosurface are qualitative static-correlation
   indicators, not a replacement for a multireference calculation;
 - results should be checked against temperature, XC functional, basis set,
   geometry, and the restricted/unrestricted choice.
