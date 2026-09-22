@@ -1,4 +1,4 @@
-# Static correlation with finite-temperature DFT in PySCF
+# Static correlation Thermometer with finite-temperature DFT in PySCF
 
 This project will provide a small PySCF workflow for visualizing static
 correlation at a supplied molecular geometry and exchange-correlation (XC)
