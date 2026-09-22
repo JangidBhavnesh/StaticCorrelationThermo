@@ -22,10 +22,16 @@ StaticCorrelationThermo/
 │   └── static_correlation_thermo/
 │       ├── __init__.py
 │       └── ftdft.py
+├── comparisons/
+│   └── n2_fod/
+│       ├── README.md
+│       ├── n2_fod_comparison.csv
+│       └── run_comparison.py
 ├── examples/
 │   └── h2_dissociation.py
 ├── tests/
-│   └── test_ftdft.py
+│   ├── test_ftdft.py
+│   └── test_n2_comparison_data.py
 ├── pyproject.toml
 └── README.md
 ```
@@ -156,6 +162,15 @@ python examples/h2_dissociation.py
 ```
 
 This writes one Molden file and one FOD cube per geometry under `fod_results/`.
+
+## ORCA comparison
+
+An N2 bond-stretching comparison against ORCA's default `! FOD` calculation is
+included under [`comparisons/n2_fod`](comparisons/n2_fod/README.md). With the
+common TPSS/def2-TZVP model chemistry and 5000 K electronic temperature, the
+largest absolute difference in `N_FOD` over six geometries is below `0.001`.
+The comparison runner and machine-readable CSV are included for
+reproducibility.
 
 ## Spin choice
 
